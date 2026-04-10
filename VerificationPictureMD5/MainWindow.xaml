@@ -40,17 +40,15 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" MinWidth="200"/>
                 <ColumnDefinition Width="3"/>
-                <ColumnDefinition Width="8"/>
+                <ColumnDefinition Width="5"/>
             </Grid.ColumnDefinitions>
             
             <!-- DataGrid for images -->
             <DataGrid x:Name="ImagesDataGrid" 
                       Grid.Column="0"
                       Margin="0"
-                      Padding="0"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      HorizontalContentAlignment="Stretch"
                       AutoGenerateColumns="False"
                       CanUserAddRows="False"
                       CanUserDeleteRows="False"
@@ -91,18 +89,16 @@
                     BorderBrush="Gray" 
                     BorderThickness="1" 
                     Margin="0"
-                    Padding="0"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     Background="LightGray">
                 <ScrollViewer HorizontalScrollBarVisibility="Auto" 
                               VerticalScrollBarVisibility="Auto"
                               Margin="0"
-                              Padding="0"
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Stretch">
                     <Image x:Name="PreviewImage" 
-                           Stretch="Uniform"
+                           Stretch="UniformToFill"
                            Margin="0"
                            HorizontalAlignment="Stretch"
                            VerticalAlignment="Stretch"/>
