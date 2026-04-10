@@ -36,5 +36,10 @@ namespace VerificationPictureMD5
         /// Gets or sets the last selected directory path
         /// </summary>
         public string LastDirectory { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the splitter position as a ratio (0.0 to 1.0)
+        /// </summary>
+        public double SplitterPosition { get; set; } = 0.7;
     }
 }

@@ -72,12 +72,14 @@
             </DataGrid>
             
             <!-- GridSplitter -->
-            <GridSplitter Grid.Column="1"
+            <GridSplitter x:Name="MainGridSplitter"
+                          Grid.Column="1"
                           Width="5"
                           HorizontalAlignment="Center"
                           VerticalAlignment="Stretch"
                           Background="LightGray"
-                          ShowsPreview="True"/>
+                          ShowsPreview="True"
+                          DragCompleted="MainGridSplitter_DragCompleted"/>
             
             <!-- Image preview -->
             <Border Grid.Column="2" 

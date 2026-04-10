@@ -52,6 +52,9 @@ namespace VerificationPictureMD5
             
             // Restore last directory
             DirectoryTextBox.Text = _settings.LastDirectory;
+            
+            // Restore splitter position after window is loaded
+            Loaded += (s, e) => RestoreSplitterPosition();
         }
 
         /// <summary>
@@ -77,6 +80,7 @@ namespace VerificationPictureMD5
             
             _settings.WindowState = WindowState;
             _settings.LastDirectory = DirectoryTextBox.Text;
+            _settings.SplitterPosition = CalculateSplitterPosition();
             
             App.SaveSettings(_settings);
         }
@@ -255,6 +259,68 @@ namespace VerificationPictureMD5
             {
                 PreviewImage.Source = null;
             }
+        }
+
+        /// <summary>
+        /// Restores the splitter position from settings
+        /// </summary>
+        private void RestoreSplitterPosition()
+        {
+            try
+            {
+                var mainGrid = ImagesDataGrid.Parent as Grid;
+                if (mainGrid != null)
+                {
+                    var totalWidth = mainGrid.ActualWidth;
+                    if (totalWidth > 0)
+                    {
+                        var splitterWidth = totalWidth * _settings.SplitterPosition;
+                        var columnDefinition = mainGrid.ColumnDefinitions[1];
+                        columnDefinition.Width = new GridLength(splitterWidth, GridUnitType.Pixel);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error restoring splitter position: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Calculates the current splitter position as a ratio
+        /// </summary>
+        /// <returns>The splitter position as a ratio (0.0 to 1.0)</returns>
+        private double CalculateSplitterPosition()
+        {
+            try
+            {
+                var mainGrid = ImagesDataGrid.Parent as Grid;
+                if (mainGrid != null)
+                {
+                    var totalWidth = mainGrid.ActualWidth;
+                    if (totalWidth > 0)
+                    {
+                        var dataGridWidth = mainGrid.ColumnDefinitions[0].ActualWidth;
+                        return dataGridWidth / totalWidth;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error calculating splitter position: {ex.Message}");
+            }
+            return 0.7; // Default fallback value
+        }
+
+        /// <summary>
+        /// Handles the GridSplitter drag completed event
+        /// </summary>
+        /// <param name="sender">The event sender</param>
+        /// <param name="e">The drag completed event arguments</param>
+        private void MainGridSplitter_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        {
+            // Save the new splitter position immediately
+            _settings.SplitterPosition = CalculateSplitterPosition();
         }
     }
 
