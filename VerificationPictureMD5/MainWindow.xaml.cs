@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Win32;
@@ -114,7 +116,7 @@ namespace VerificationPictureMD5
         /// </summary>
         /// <param name="sender">The event sender</param>
         /// <param name="e">The routed event arguments</param>
-        private void LoadImagesButton_Click(object sender, RoutedEventArgs e)
+        private async void LoadImagesButton_Click(object sender, RoutedEventArgs e)
         {
             if (!Directory.Exists(DirectoryTextBox.Text))
             {
@@ -127,33 +129,23 @@ namespace VerificationPictureMD5
             waitWindow.Owner = this;
             waitWindow.Show();
 
+            // Clear items before starting
+            ImageItems.Clear();
+
             try
             {
-                // Process on a separate thread to keep UI responsive
-                System.Threading.Tasks.Task.Run(() =>
+                var images = await LoadImagesFromDirectoryAsync(DirectoryTextBox.Text, 
+                    message => waitWindow.UpdateStatus(message));
+
+                // Add items on UI thread
+                foreach (var imageInfo in images)
                 {
-                    try
-                    {
-                        LoadImagesFromDirectory(DirectoryTextBox.Text, waitWindow);
-                    }
-                    catch (Exception ex)
-                    {
-                        Dispatcher.Invoke(() =>
-                        {
-                            MessageBox.Show($"Error loading images: {ex.Message}", "Error", 
-                                MessageBoxButton.OK, MessageBoxImage.Error);
-                        });
-                    }
-                    finally
-                    {
-                        Dispatcher.Invoke(() =>
-                        {
-                            waitWindow.Close();
-                            MessageBox.Show($"Loaded {ImageItems.Count} images from the directory.", 
-                                "Load Complete", MessageBoxButton.OK, MessageBoxImage.Information);
-                        });
-                    }
-                });
+                    ImageItems.Add(imageInfo);
+                }
+
+                waitWindow.Close();
+                MessageBox.Show($"Loaded {ImageItems.Count} images from the directory.", 
+                    "Load Complete", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
@@ -164,47 +156,50 @@ namespace VerificationPictureMD5
         }
 
         /// <summary>
-        /// Loads all JPG images from the specified directory
+        /// Loads all JPG images from the specified directory asynchronously
         /// </summary>
         /// <param name="directoryPath">The directory path to load images from</param>
-        /// <param name="waitWindow">The wait window to update status</param>
-        private void LoadImagesFromDirectory(string directoryPath, PleaseWaitWindow waitWindow)
+        /// <param name="updateStatus">Action to update status message</param>
+        /// <returns>List of processed image information</returns>
+        private async Task<List<ImageInfo>> LoadImagesFromDirectoryAsync(string directoryPath, Action<string> updateStatus)
         {
-            Dispatcher.Invoke(() => ImageItems.Clear());
-            
-            var jpgFiles = Directory.GetFiles(directoryPath, "*.jpg", SearchOption.TopDirectoryOnly)
-                .Concat(Directory.GetFiles(directoryPath, "*.jpeg", SearchOption.TopDirectoryOnly));
-
-            int processedCount = 0;
-            int totalCount = jpgFiles.Count();
-
-            foreach (var filePath in jpgFiles)
+            return await Task.Run(() =>
             {
-                try
-                {
-                    // Update status
-                    waitWindow?.Dispatcher.Invoke(() => 
-                        waitWindow.UpdateStatus($"Processing {Path.GetFileName(filePath)}..."));
+                var jpgFiles = Directory.GetFiles(directoryPath, "*.jpg", SearchOption.TopDirectoryOnly)
+                    .Concat(Directory.GetFiles(directoryPath, "*.jpeg", SearchOption.TopDirectoryOnly));
 
-                    var md5Hash = CalculateMD5Hash(filePath);
-                    var imageInfo = new ImageInfo
-                    {
-                        Path = filePath,
-                        MD5Hash = md5Hash
-                    };
-                    
-                    Dispatcher.Invoke(() => ImageItems.Add(imageInfo));
-                    processedCount++;
-                    
-                    // Update progress
-                    waitWindow?.Dispatcher.Invoke(() => 
-                        waitWindow.UpdateStatus($"Processed {processedCount} of {totalCount} images..."));
-                }
-                catch (Exception ex)
+                int processedCount = 0;
+                int totalCount = jpgFiles.Count();
+                var imagesToAdd = new List<ImageInfo>();
+
+                foreach (var filePath in jpgFiles)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Error processing {filePath}: {ex.Message}");
+                    try
+                    {
+                        // Update status
+                        updateStatus($"Processing {Path.GetFileName(filePath)}...");
+
+                        var md5Hash = CalculateMD5Hash(filePath);
+                        var imageInfo = new ImageInfo
+                        {
+                            Path = filePath,
+                            MD5Hash = md5Hash
+                        };
+                        
+                        imagesToAdd.Add(imageInfo);
+                        processedCount++;
+                        
+                        // Update progress
+                        updateStatus($"Processed {processedCount} of {totalCount} images...");
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error processing {filePath}: {ex.Message}");
+                    }
                 }
-            }
+
+                return imagesToAdd;
+            });
         }
 
         /// <summary>
