@@ -224,6 +224,9 @@ namespace VerificationPictureMD5
 
             // Clear items before starting
             ImageItems.Clear();
+            
+            // Disable Find Duplicate button during loading
+            FindDuplicateButton.IsEnabled = false;
 
             try
             {
@@ -238,6 +241,9 @@ namespace VerificationPictureMD5
                 {
                     ImageItems.Add(imageInfo);
                 }
+
+                // Enable Find Duplicate button if images were loaded
+                FindDuplicateButton.IsEnabled = ImageItems.Count > 0;
 
                 // Debug: Log final UI count
                 System.Diagnostics.Debug.WriteLine($"UI ImageItems now has {ImageItems.Count} items");

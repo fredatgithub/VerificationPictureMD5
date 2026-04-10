@@ -38,6 +38,7 @@
                     Content="Find Duplicate" 
                     Width="120" 
                     Height="30"
+                    IsEnabled="False"
                     Click="FindDuplicateButton_Click"/>
         </StackPanel>
         
