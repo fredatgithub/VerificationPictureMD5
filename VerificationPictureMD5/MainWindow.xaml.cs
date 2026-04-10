@@ -135,13 +135,19 @@ namespace VerificationPictureMD5
             try
             {
                 var images = await LoadImagesFromDirectoryAsync(DirectoryTextBox.Text, 
-                    message => waitWindow.UpdateStatus(message));
+                    message => Dispatcher.Invoke(() => waitWindow.UpdateStatus(message)));
+
+                // Debug: Log result from background
+                System.Diagnostics.Debug.WriteLine($"Received {images.Count} images from background task");
 
                 // Add items on UI thread
                 foreach (var imageInfo in images)
                 {
                     ImageItems.Add(imageInfo);
                 }
+
+                // Debug: Log final UI count
+                System.Diagnostics.Debug.WriteLine($"UI ImageItems now has {ImageItems.Count} items");
 
                 waitWindow.Close();
                 MessageBox.Show($"Loaded {ImageItems.Count} images from the directory.", 
@@ -172,6 +178,9 @@ namespace VerificationPictureMD5
                 int totalCount = jpgFiles.Count();
                 var imagesToAdd = new List<ImageInfo>();
 
+                // Debug: Log file count
+                System.Diagnostics.Debug.WriteLine($"Found {totalCount} files in {directoryPath}");
+
                 foreach (var filePath in jpgFiles)
                 {
                     try
@@ -189,6 +198,9 @@ namespace VerificationPictureMD5
                         imagesToAdd.Add(imageInfo);
                         processedCount++;
                         
+                        // Debug: Log processing
+                        System.Diagnostics.Debug.WriteLine($"Processed {processedCount}/{totalCount}: {filePath}");
+                        
                         // Update progress
                         updateStatus($"Processed {processedCount} of {totalCount} images...");
                     }
@@ -197,6 +209,9 @@ namespace VerificationPictureMD5
                         System.Diagnostics.Debug.WriteLine($"Error processing {filePath}: {ex.Message}");
                     }
                 }
+
+                // Debug: Log final result
+                System.Diagnostics.Debug.WriteLine($"Returning {imagesToAdd.Count} images");
 
                 return imagesToAdd;
             });
