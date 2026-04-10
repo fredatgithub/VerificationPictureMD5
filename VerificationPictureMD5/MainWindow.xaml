@@ -38,8 +38,9 @@
         <!-- Main content area -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="300"/>
+                <ColumnDefinition Width="*" MinWidth="200"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="300" MinWidth="200"/>
             </Grid.ColumnDefinitions>
             
             <!-- DataGrid for images -->
@@ -70,8 +71,16 @@
                 </DataGrid.Columns>
             </DataGrid>
             
+            <!-- GridSplitter -->
+            <GridSplitter Grid.Column="1"
+                          Width="5"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Stretch"
+                          Background="LightGray"
+                          ShowsPreview="True"/>
+            
             <!-- Image preview -->
-            <Border Grid.Column="1" 
+            <Border Grid.Column="2" 
                     BorderBrush="Gray" 
                     BorderThickness="1" 
                     Margin="10,0,0,0"
