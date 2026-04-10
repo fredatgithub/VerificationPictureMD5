@@ -1,0 +1,34 @@
+<Window x:Class="VerificationPictureMD5.PleaseWaitWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:VerificationPictureMD5"
+        mc:Ignorable="d"
+        Title="Loading..." 
+        Height="150" 
+        Width="350"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Topmost="True">
+    <Grid Background="White">
+        <StackPanel HorizontalAlignment="Center" 
+                    VerticalAlignment="Center">
+            <TextBlock Text="Please wait..." 
+                       FontSize="16" 
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,10"/>
+            <TextBlock x:Name="StatusTextBlock" 
+                       Text="Loading images..." 
+                       FontSize="14"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,15"/>
+            <ProgressBar x:Name="ProgressBar" 
+                         Height="20" 
+                         Width="250"
+                         IsIndeterminate="True"/>
+        </StackPanel>
+    </Grid>
+</Window>

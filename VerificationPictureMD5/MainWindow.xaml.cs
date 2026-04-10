@@ -119,12 +119,41 @@ namespace VerificationPictureMD5
                 return;
             }
 
+            var waitWindow = new PleaseWaitWindow();
+            waitWindow.Owner = this;
+            waitWindow.Show();
+
             try
             {
-                LoadImagesFromDirectory(DirectoryTextBox.Text);
+                // Process on a separate thread to keep UI responsive
+                System.Threading.Tasks.Task.Run(() =>
+                {
+                    try
+                    {
+                        LoadImagesFromDirectory(DirectoryTextBox.Text, waitWindow);
+                    }
+                    catch (Exception ex)
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            MessageBox.Show($"Error loading images: {ex.Message}", "Error", 
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+                        });
+                    }
+                    finally
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            waitWindow.Close();
+                            MessageBox.Show($"Loaded {ImageItems.Count} images from the directory.", 
+                                "Load Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                        });
+                    }
+                });
             }
             catch (Exception ex)
             {
+                waitWindow.Close();
                 MessageBox.Show($"Error loading images: {ex.Message}", "Error", 
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -134,33 +163,44 @@ namespace VerificationPictureMD5
         /// Loads all JPG images from the specified directory
         /// </summary>
         /// <param name="directoryPath">The directory path to load images from</param>
-        private void LoadImagesFromDirectory(string directoryPath)
+        /// <param name="waitWindow">The wait window to update status</param>
+        private void LoadImagesFromDirectory(string directoryPath, PleaseWaitWindow waitWindow)
         {
-            ImageItems.Clear();
+            Dispatcher.Invoke(() => ImageItems.Clear());
             
             var jpgFiles = Directory.GetFiles(directoryPath, "*.jpg", SearchOption.TopDirectoryOnly)
                 .Concat(Directory.GetFiles(directoryPath, "*.jpeg", SearchOption.TopDirectoryOnly));
+
+            int processedCount = 0;
+            int totalCount = jpgFiles.Count();
 
             foreach (var filePath in jpgFiles)
             {
                 try
                 {
+                    // Update status
+                    waitWindow?.Dispatcher.Invoke(() => 
+                        waitWindow.UpdateStatus($"Processing {Path.GetFileName(filePath)}..."));
+
                     var md5Hash = CalculateMD5Hash(filePath);
                     var imageInfo = new ImageInfo
                     {
                         Path = filePath,
                         MD5Hash = md5Hash
                     };
-                    ImageItems.Add(imageInfo);
+                    
+                    Dispatcher.Invoke(() => ImageItems.Add(imageInfo));
+                    processedCount++;
+                    
+                    // Update progress
+                    waitWindow?.Dispatcher.Invoke(() => 
+                        waitWindow.UpdateStatus($"Processed {processedCount} of {totalCount} images..."));
                 }
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.WriteLine($"Error processing {filePath}: {ex.Message}");
                 }
             }
-
-            MessageBox.Show($"Loaded {ImageItems.Count} images from the directory.", 
-                "Load Complete", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         /// <summary>
