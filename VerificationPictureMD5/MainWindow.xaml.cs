@@ -112,6 +112,71 @@ namespace VerificationPictureMD5
         }
 
         /// <summary>
+        /// Handles the find duplicate button click event
+        /// </summary>
+        /// <param name="sender">The event sender</param>
+        /// <param name="e">The routed event arguments</param>
+        private void FindDuplicateButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ImageItems == null || ImageItems.Count == 0)
+            {
+                MessageBox.Show("No images loaded. Please load images first.", "No Images", 
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // Clear previous highlights
+            ClearHighlights();
+
+            // Find duplicates by MD5 hash
+            var duplicates = ImageItems
+                .GroupBy(item => item.MD5Hash)
+                .Where(group => group.Count() > 1)
+                .ToList();
+
+            if (duplicates.Count == 0)
+            {
+                MessageBox.Show("No duplicate MD5 hashes found.", "No Duplicates", 
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // Highlight duplicate rows
+            foreach (var duplicateGroup in duplicates)
+            {
+                foreach (var duplicateItem in duplicateGroup)
+                {
+                    var row = ImagesDataGrid.ItemContainerGenerator.ContainerFromItem(duplicateItem) as DataGridRow;
+                    if (row != null)
+                    {
+                        row.Background = System.Windows.Media.Brushes.LightYellow;
+                    }
+                }
+            }
+
+            // Show results
+            int totalDuplicates = duplicates.Sum(g => g.Count() - 1); // Count extra items beyond first in each group
+            MessageBox.Show($"Found {duplicates.Count} groups of duplicates ({totalDuplicates} duplicate images).\n" +
+                          $"Highlighted rows in yellow.", "Duplicates Found", 
+                          MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        /// <summary>
+        /// Clears all row highlights
+        /// </summary>
+        private void ClearHighlights()
+        {
+            foreach (var item in ImageItems)
+            {
+                var row = ImagesDataGrid.ItemContainerGenerator.ContainerFromItem(item) as DataGridRow;
+                if (row != null)
+                {
+                    row.Background = System.Windows.Media.Brushes.Transparent;
+                }
+            }
+        }
+
+        /// <summary>
         /// Handles the load images button click event
         /// </summary>
         /// <param name="sender">The event sender</param>
