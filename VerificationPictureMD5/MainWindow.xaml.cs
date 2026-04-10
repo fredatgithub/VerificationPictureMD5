@@ -162,6 +162,34 @@ namespace VerificationPictureMD5
         }
 
         /// <summary>
+        /// Handles the copy MD5 menu item click event
+        /// </summary>
+        /// <param name="sender">The event sender</param>
+        /// <param name="e">The routed event arguments</param>
+        private void CopyMD5MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (ImagesDataGrid.SelectedItem is ImageInfo selectedImage)
+            {
+                try
+                {
+                    Clipboard.SetText(selectedImage.MD5Hash);
+                    MessageBox.Show("MD5 hash copied to clipboard.", "Copied", 
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to copy MD5 hash: {ex.Message}", "Error", 
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            else
+            {
+                MessageBox.Show("No image selected. Please select an image first.", "No Selection", 
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        /// <summary>
         /// Clears all row highlights
         /// </summary>
         private void ClearHighlights()

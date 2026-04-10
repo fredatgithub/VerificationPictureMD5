@@ -66,6 +66,11 @@
                       HeadersVisibility="Column"
                       SelectionMode="Single"
                       SelectionChanged="ImagesDataGrid_SelectionChanged">
+                <DataGrid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Copy MD5 Hash" Click="CopyMD5MenuItem_Click"/>
+                    </ContextMenu>
+                </DataGrid.ContextMenu>
                 <DataGrid.Columns>
                     <DataGridTextColumn 
                         Header="Image Path" 
